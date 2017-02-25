@@ -1,7 +1,8 @@
 # sheep-eating
 C++ console game with based object oriented mechanisms. My very first approach to classes, methods, etc.  
 
-The Player is steering the wolf(which is marked as 'W'),by pressing W,A,S,D keys. Wolf is on the board along with five sheeps(You can change the number of spawned sheeps in main.cpp code). 
+screenshot:
+http://imgur.com/a/UqQIT
 
 ## How to run it
 The game was written on Linux and at this point it works only on this platform.
