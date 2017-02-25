@@ -1,27 +1,24 @@
 #include <iostream>
 #include <cstdlib>
-#include <ncurses.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <ctime>
-#include <locale>
 
 using namespace std;
 
-#define SZEROKOSC_PLANSZY 10                 // przypisujemy stale wartosci, ktore kompilator wklei w miejsca tam gdzie napotka ten wyraz ( nie zajmuje miejsca w pamieci )
-#define WYSOKOSC_PLANSZY 5                  // kod dzieki temu jest latwy do modyfikacji ( wszystko jest w jednym miejscu)
+#define SZEROKOSC_PLANSZY 30                 // przypisujemy stale wartosci, ktore kompilator wklei w miejsca tam gdzie napotka ten wyraz ( nie zajmuje miejsca w pamieci )
+#define WYSOKOSC_PLANSZY  30               // kod dzieki temu jest latwy do modyfikacji ( wszystko jest w jednym miejscu)
 
 #define SYMBOL_GRANICY 'X'
 #define SYMBOL_PUSTEGO_MIEJSCA ' '
 #define SYMBOL_WILKA 'W'
 #define SYMBOL_OWCY 'O'
 
-#define ILOSC_OWIEC 10
+#define ILOSC_OWIEC 20
 
 
 // zastepuje smieci ktore byly w planszy
-void generuj_granice_planszy(
-        char plansza[SZEROKOSC_PLANSZY][WYSOKOSC_PLANSZY]) {           // odwiedza kazda komorke i gdy spelnia warunki wstawia symbol granicy
+void generuj_granice_planszy(char plansza[SZEROKOSC_PLANSZY][WYSOKOSC_PLANSZY]) {           // odwiedza kazda komorke i gdy spelnia warunki wstawia symbol granicy
     for (int x = 0; x < SZEROKOSC_PLANSZY; x++) {
         for (int y = 0; y < WYSOKOSC_PLANSZY; y++) {
             if (x == 0 || x == SZEROKOSC_PLANSZY - 1 || y == 0 || y == WYSOKOSC_PLANSZY - 1) {
@@ -48,32 +45,32 @@ void rysuj_plansze(char plansza[SZEROKOSC_PLANSZY][WYSOKOSC_PLANSZY], int najedz
     }
     cout<<"Najedzenie wilka: " << najedzenie << endl;
 
-}// coutownaie ilosci najedzenia , 2 parametr to wilk
+}// coutownaie ilosci najedzenia
 
-class Owca {
+class Owca {                               // stworzenie klasy owcy
 
-public :
+public :                                   // dostepne na zewnatrz kodu klasy , dzieki temu moze byc bez problemu wywolywany np .w mainie
 
 
     int x;
     int y;
     bool czy_zyje;
 
-    Owca() {
+    Owca() {                     // konstruktor
 
-        x = (rand() % (SZEROKOSC_PLANSZY - 2)) + 1;
-        y = (rand() % (WYSOKOSC_PLANSZY - 2)) + 1;
+        x = (rand() % (SZEROKOSC_PLANSZY - 2)) + 1;                // dane wejsciowe m.in. losowanie paczatkowych
+        y = (rand() % (WYSOKOSC_PLANSZY - 2)) + 1;                 // wspolrzednych owiec
         czy_zyje=true;
 
     }
 
 
-    void poruszanie_owcy(int &najedzenie,int &zabite_owce ,int x_wilka, int y_wilka) { //p[rzekazujemy oryginal zeby owca mogla zmodyfikowac wilka najedzenie itd
-
+    void poruszanie_owcy(int &najedzenie,int &zabite_owce ,int x_wilka, int y_wilka) { // przekazujemy oryginal zeby owca mogla
+                                                                                       // zmodyfikowac wspolrzedne, najedzenie wilka
         int stary_x = x;
         int stary_y = y;
 
-        int kierunek = rand() % 4;
+        int kierunek = rand() % 4;                             // losowanie kierunku ruchu owcy
 
 #define LEWO 0
 #define PRAWO 1
@@ -99,12 +96,12 @@ public :
                 break;
         }
 
-        if(x==0 || x == SZEROKOSC_PLANSZY - 1 || y == 0 || y == WYSOKOSC_PLANSZY - 1){
-            x = stary_x;
-            y = stary_y;
+        if(x==0 || x == SZEROKOSC_PLANSZY - 1 || y == 0 || y == WYSOKOSC_PLANSZY - 1){  // gdy owca bedzie  chciala wejsc na granice
+            x = stary_x;                                                                // to zostana im stare wspolrzedne
+            y = stary_y;                                                                // bedzie losowac ruch jeszcze raz
         }
 
-        if(x_wilka == x && y_wilka == y){
+        if(x_wilka == x && y_wilka == y){                                               // kolizja->smierc owcy , zliczanie zabicia, wzrost najedzenia
             czy_zyje = false;
             zabite_owce++;
             najedzenie += 100;
@@ -115,7 +112,7 @@ public :
 
 class Wilk {
 
-public:    //dzieki temu moze byc bez problemu wywolywany w mainie
+public:
 
     int najedzenie;
     int x;
@@ -138,7 +135,6 @@ public:    //dzieki temu moze byc bez problemu wywolywany w mainie
 
         char c = 0;
 
-        //c = getchar();
         cin>>c;
         switch (c) {
             case 'w':
@@ -156,13 +152,18 @@ public:    //dzieki temu moze byc bez problemu wywolywany w mainie
 
         }
 
-        if(x==0 || x==SZEROKOSC_PLANSZY-1|| y==0 || y==WYSOKOSC_PLANSZY-1){
+        if(x==0 || x==SZEROKOSC_PLANSZY-1|| y==0 || y==WYSOKOSC_PLANSZY-1){   // wilk nie wyjdzie za granice planszy
 
             x=stary_x;
             y=stary_y;
         }else if(c == 'w' || c == 's' || c == 'a' || c == 'd')
         {
-            najedzenie-=10;
+            if(najedzenie < 10)
+                najedzenie = 0;
+            else
+                najedzenie-=10;                  // zmniejszanie najedzenia wraz z ruchem
+        }else{
+            najedzenie--;                    // inny wcisniety klawisz -> wilk przeczeka tracac tylko 1 pkt. energii
         }
 
         for(int i=0; i<ILOSC_OWIEC ; i++)
@@ -185,13 +186,13 @@ public:    //dzieki temu moze byc bez problemu wywolywany w mainie
 
 int main() {
 
-    srand(time(NULL));
+    srand(time(NULL));            // za kazdym razem na paczatku owce pojawia sie w nowym miejscu i beda sie inaczej ruszac
 
     int zabite_owce=0;
 
     Owca owce[ILOSC_OWIEC];
 
-    for(int i=0; i<ILOSC_OWIEC; i++)
+    for(int i=0; i<ILOSC_OWIEC; i++)                               // dla kazdego elementu stworzy sie nowy konstruktor
     {
         owce[i] =  Owca();
     }
@@ -201,10 +202,9 @@ int main() {
 
     char plansza[SZEROKOSC_PLANSZY][WYSOKOSC_PLANSZY];  // deklaracja tablicy dwu wymiarowej
     generuj_granice_planszy(plansza);                   // wywołujemy funkcje, ktora wstawia symbol granicy na obrzezach tablic
-    plansza[wilk.x][wilk.y] = SYMBOL_WILKA;// wstawiam w konkretna komorke tablicy symbol wilka// wywołanie funkcjii, która wyswietla kazda komorke ktora nalezy do planszy
+    plansza[wilk.x][wilk.y] = SYMBOL_WILKA;// wstawiam w konkretna komorke tablicy symbol wilka // wywołanie funkcjii, która wyswietla kazda komorke ktora nalezy do planszy
 
     for(int i=0; i<ILOSC_OWIEC; i++) {
-
 
         plansza[owce[i].x][owce[i].y] = SYMBOL_OWCY;
     }
@@ -212,22 +212,19 @@ int main() {
 
     rysuj_plansze(plansza, wilk.najedzenie);
     cout<<"Witaj w grze \"Wilk i owce\" . Uzywaj klawiszy: W, S, A, D + enter by poruszać wilkiem"<<endl;
-
-    while (wilk.najedzenie > 0) {
-
-
-        //printf("\033[2J\033[1;1H");
+    cout<<"Wciśnij dowolny inny klawisz, by przyczaić się na owce, tracąc tylko 1 pkt. energii"<<endl;
 
 
+    while (wilk.najedzenie > 0 && zabite_owce<ILOSC_OWIEC) {              // petla gry
 
-        // 2. usun ze straych pozycji na planszy)
+        // 1. usun ze starych pozycji na planszy)
         plansza[wilk.x][wilk.y] = SYMBOL_PUSTEGO_MIEJSCA;
         for(int i=0; i<ILOSC_OWIEC; i++)
         {
             plansza[owce[i].x][owce[i].y] = SYMBOL_PUSTEGO_MIEJSCA;
         }
 
-        // 3. porusz kazdym organizmem // 4. wstaw nowe pozycje do planszy
+        // 2. porusz kazdym organizmem // 3. wstaw nowe pozycje do planszy
         wilk.poruszanie_wilka(owce,zabite_owce,plansza);
         for(int i=0; i<ILOSC_OWIEC; i++) {
             if(owce[i].czy_zyje==true) {
@@ -243,19 +240,19 @@ int main() {
         // 5. odswiez plansze na ekran
         rysuj_plansze(plansza, wilk.najedzenie);
         cout<<"Współrzędne wilka -> x: " << wilk.x << " y: " <<wilk.y<<endl;
-        cout<<"Wspolrzędne owcy -> x: " << owce[0].x << " y: " <<owce[0].y<<endl;
-        //cout<<"Wspolrzędne owcy -> x: " << owce[1].x << " y: " <<owce[1].y<<endl;
-        //cout<<"Wspolrzędne owcy -> x: " << owce[2].x << " y: " <<owce[2].y<<endl;
-        //cout<<"Wspolrzędne owcy -> x: " << owce[3].x << " y: " <<owce[3].y<<endl;
-        //sleep(1);
 
-        if(zabite_owce==ILOSC_OWIEC)
-        {
-            break;
-        }
+
 
     }
-    cout<<"koniec gry!";
+
+    if(zabite_owce==ILOSC_OWIEC)  // jesli gracz zabil wszytkie owce
+    {
+        cout<<"Gratulacje, udało Ci się zabić wszytkie owce!"<<endl;
+    }else{
+
+        cout<<"Wilk umarł z głodu..."<<endl;
+    }
+
 
     return 0;
 }
